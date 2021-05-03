@@ -9,12 +9,21 @@ const handle = app.getRequestHandler() ;
 app.prepare().then(()=>{
     const server = new Koa();
     const router = new Router();
-        
+    
+    router.get('/query/:name', async (ctx) => {
+      const { name } = ctx.params
+      await handle(ctx.req, ctx.res, {
+        pathname: '/tab/query',
+        query: { name },
+      })
+      ctx.respond = false
+    })
+    
     server.use(router.routes());
     
     server.use(async (ctx, next)=>{
         await handle(ctx.req, ctx.res);
-        ctx.response = false;
+        ctx.respond = false;
     })
     
     server.listen(3000, ()=>{
