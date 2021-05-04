@@ -202,8 +202,6 @@ function getOrCreateStore(initialState) {
     Object(_babel_runtime_corejs2_helpers_esm_createClass__WEBPACK_IMPORTED_MODULE_7__["default"])(WithReduxApp, [{
       key: "render",
       value: function render() {
-        console.log("render");
-
         var _this$props = this.props,
             Component = _this$props.Component,
             pageProps = _this$props.pageProps,
