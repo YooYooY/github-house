@@ -1,81 +1,37 @@
-import Link from 'next/link'
-import Router from 'next/router'
-import { Button } from 'antd'
-import { useCallback } from 'react'
-import { connect } from 'react-redux'
+import getConfig from 'next/config'
+import axios from 'axios'
+import { useEffect, useState } from 'react'
 
-import * as actions from '../store/actions'
+const { publicRuntimeConfig } = getConfig()
 
-const events = [
-  'routeChangeStart',
-  'routeChangeComplete',
-  'routeChangeError',
-  'beforeHistoryChange',
-  'hashChangeStart',
-  'hashChangeComplete',
-]
 
-function makeEvent(type) {
-  return (...args) => {
-    console.log(type, ...args)
-  }
-}
+export default () => {
+  const [state, setState] = useState([])
 
-events.forEach((event) => {
-  Router.events.on(event, makeEvent(event))
-})
+  useEffect(() => {
+    axios.get('/api/user/info').then((res) => {
+      let data = []
+      for (let key in res.data) {
+        data.push({
+          key,
+          value: JSON.stringify(res.data[key]),
+        })
+      }
+      console.log(data);
+      setState(data)
+    })
+  }, [])
 
-function TestLink() {
-  return (
-    <Link href="/tab/query?id=1" as="/query/1">
-      <a>query</a>
-    </Link>
-  )
-}
-function TestRouter() {
-  return (
-    <Button onClick={() => Router.push('/tab/query?name=2')}>Router</Button>
-  )
-}
-
-function TestPush() {
-  const handlePush = () => {
-    Router.push(
-      {
-        pathname: '/tab/query',
-        query: {
-          name: 'chenwl',
-        },
-      },
-      'query/chenwl'
-    )
-  }
-  return <Button onClick={handlePush}>test Push</Button>
-}
-
-const Index = (props) => {
-  
-  const handleChange = useCallback((e)=>{
-    props.changeName(e.target.value.trim())
-  },[])
-  
   return (
     <span>
-      <Button onClick={() => props.add()}>add</Button>
-      <input type="text" value={props.user.username} onChange={handleChange} />
-      <p>{props.count.count}</p>
-      <p>{props.user.username}</p>
-      <TestRouter />
-      <TestLink />
-      <TestPush />
+      <a href={publicRuntimeConfig.OAUTH_URL}>login</a>
+
+      {state.length && state.map(({ key, value }) => (
+        <div key={key}>
+          <h6>{key}</h6>
+          <p>{value}</p>
+        </div>
+      ))}
     </span>
   )
 }
-
-Index.getInitialProps = async ({ reduxStore }) => {
-  reduxStore.dispatch(actions.add(12))
-  console.log(reduxStore.getState())
-  return {}
-}
-
-export default connect((state) => state, actions)(Index)

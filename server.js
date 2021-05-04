@@ -2,14 +2,15 @@ const Koa = require('koa')
 const Router = require('koa-router')
 const next = require('next')
 const session = require('koa-session')
-const Redis = require("ioredis");
-const RedisSessionStore = require("./server/session-store");
+const Redis = require('ioredis')
+const RedisSessionStore = require('./server/session-store')
+const auth = require('./server/auth')
 
 const dev = process.env.NODE_ENV !== 'production'
 const app = next({ dev })
 const handle = app.getRequestHandler()
 // 创建redis client
-const redis = new Redis();
+const redis = new Redis()
 
 app.prepare().then(() => {
   const server = new Koa()
@@ -23,25 +24,17 @@ app.prepare().then(() => {
   }
   server.use(session(SESSION_CONFIG, server))
 
-  server.use(async (ctx, next) => {
-    if(ctx.session.user){
-      console.log('session is: ', ctx.session.user)
-    }else{
-      console.log("session nul***");
-    }
-    await next()
-  })
+  auth(server)
 
-  router.get('/set/user', async (ctx) => {
-    ctx.session.user = {
-      name: 'chenwl',
-      age: 23,
+  router.get('/api/user/info', async (ctx) => {
+    const user = ctx.session.userInfo
+    if (!user) {
+      ctx.status = 401
+      ctx.body = 'Need Login';
+      return;
     }
-    ctx.body = 'ser user success'
-  })
-  router.get("/delete/user", async ctx=>{
-    ctx.session = null;
-    ctx.body = "set session success";
+    ctx.body = ctx.session.userInfo
+    ctx.set("Content-Type", "application/json");
   })
 
   router.get('/query/:name', async (ctx) => {

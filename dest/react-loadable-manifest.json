@@ -23,6 +23,30 @@
       "publicPath": "static/chunks/styles.js"
     },
     {
+      "id": 6,
+      "name": null,
+      "file": "static/chunks/styles.js",
+      "publicPath": "static/chunks/styles.js"
+    },
+    {
+      "id": 7,
+      "name": null,
+      "file": "static/chunks/styles.js",
+      "publicPath": "static/chunks/styles.js"
+    },
+    {
+      "id": 8,
+      "name": null,
+      "file": "static/chunks/styles.js",
+      "publicPath": "static/chunks/styles.js"
+    },
+    {
+      "id": 9,
+      "name": null,
+      "file": "static/chunks/styles.js",
+      "publicPath": "static/chunks/styles.js"
+    },
+    {
       "id": 2,
       "name": null,
       "file": "static/chunks/styles.js",
@@ -37,8 +61,32 @@
   ],
   "./index.css": [
     {
+      "id": "./node_modules/antd/lib/avatar/style/index.css",
+      "name": "./node_modules/antd/lib/avatar/style/index.css",
+      "file": "static/chunks/styles.js",
+      "publicPath": "static/chunks/styles.js"
+    },
+    {
+      "id": "./node_modules/antd/lib/input/style/index.css",
+      "name": "./node_modules/antd/lib/input/style/index.css",
+      "file": "static/chunks/styles.js",
+      "publicPath": "static/chunks/styles.js"
+    },
+    {
       "id": "./node_modules/antd/lib/button/style/index.css",
       "name": "./node_modules/antd/lib/button/style/index.css",
+      "file": "static/chunks/styles.js",
+      "publicPath": "static/chunks/styles.js"
+    },
+    {
+      "id": "./node_modules/antd/lib/icon/style/index.css",
+      "name": "./node_modules/antd/lib/icon/style/index.css",
+      "file": "static/chunks/styles.js",
+      "publicPath": "static/chunks/styles.js"
+    },
+    {
+      "id": "./node_modules/antd/lib/layout/style/index.css",
+      "name": "./node_modules/antd/lib/layout/style/index.css",
       "file": "static/chunks/styles.js",
       "publicPath": "static/chunks/styles.js"
     }
