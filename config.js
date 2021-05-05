@@ -1,4 +1,5 @@
 const GITHUB_OAUTH_URL = 'https://github.com/login/oauth/authorize'
+const GITHUB_BASE_URL = 'https://api.github.com'
 const SCOPE = 'user'
 
 const github = {
@@ -11,6 +12,7 @@ const github = {
 module.exports = {
   github,
   GITHUB_OAUTH_URL,
+  GITHUB_BASE_URL,
   OAUTH_URL: `${GITHUB_OAUTH_URL}?client_id=${github.client_id}&scope=${SCOPE}`,
-};
+}
 
