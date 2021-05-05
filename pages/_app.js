@@ -11,46 +11,41 @@ import axios from 'axios'
 
 class MyApp extends App {
   state = {
-    loading: false
+    loading: false,
   }
-  startLoading = ()=>{
+  startLoading = () => {
     this.setState({
-      loading: true
+      loading: true,
     })
   }
-  stopLoading = ()=>{
+  stopLoading = () => {
     this.setState({
-      loading: false
+      loading: false,
     })
   }
-  
-  componentDidMount(){
-    Router.events.on("routeChangeStart",this.startLoading);
-    Router.events.on("routeChangeComplete",this.stopLoading);
-    Router.events.on("routeChangeError", this.stopLoading);
-    
-    // axios
-    //   .get('/github/search/repositories?q=react')
-    //   .then((resp) => console.log(resp.data))
-    
+
+  componentDidMount() {
+    Router.events.on('routeChangeStart', this.startLoading)
+    Router.events.on('routeChangeComplete', this.stopLoading)
+    Router.events.on('routeChangeError', this.stopLoading)
   }
-  componentWillUnmount(){
-    Router.events.off("routeChangeStart",this.startLoading);
-    Router.events.off("routeChangeComplete",this.stopLoading);
-    Router.events.off("routeChangeError", this.stopLoading);    
+  componentWillUnmount() {
+    Router.events.off('routeChangeStart', this.startLoading)
+    Router.events.off('routeChangeComplete', this.stopLoading)
+    Router.events.off('routeChangeError', this.stopLoading)
   }
-  
-  static async getInitialProps(ctx) {
-    const { Component } = ctx
+
+  static async getInitialProps(props) {
+    const { Component } = props
     let pageProps = {}
     if (Component.getInitialProps) {
-      pageProps = await Component.getInitialProps(ctx)
+      pageProps = await Component.getInitialProps(props)
     }
     return {
       pageProps,
     }
   }
-  
+
   render() {
     const { Component, pageProps, reduxStore } = this.props
 
@@ -59,8 +54,12 @@ class MyApp extends App {
         <Provider store={reduxStore}>
           {this.state.loading && <PageLoading />}
           <Layout>
-            <Link href="/"><a>Index</a></Link>
-            <Link href="/detail"><a>Detail</a></Link>
+            <Link href="/">
+              <a>Index</a>
+            </Link>
+            <Link href="/detail">
+              <a>Detail</a>
+            </Link>
             <Component {...pageProps} />
           </Layout>
         </Provider>

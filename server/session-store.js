@@ -9,7 +9,6 @@ class RedisSessionStore {
   // 获取Redis中存储的session数据
   async get(sid) {
     console.log('get session', sid)
-    console.log('get session', sid)
     const id = getRedisSessionId(sid)
     const data = await this.client.get(id)
     if (!data) return null

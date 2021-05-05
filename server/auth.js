@@ -25,7 +25,6 @@ module.exports = (server) => {
             Accept: 'application/json',
           },
         })
-        console.log('token result', result.data)
 
         if (result.status === 200 && result.data && !result.data.error) {
           ctx.session.githubAuth = result.data
@@ -50,7 +49,6 @@ module.exports = (server) => {
           ctx.body = `request token failed ${errorMsg}`
         }
       } catch (error) {
-        console.log(error)
         ctx.body = `catch axios error ${error.message}`
       }
     } else {

@@ -1,24 +1,34 @@
-import axios from 'axios'
-import {useEffect} from 'react'
-const api = require("../lib/api");
+import { Alert } from 'antd'
+const api = require('../lib/api')
 
-const Index = (props) => {
-  console.log("index-props",props);
-  useEffect(()=>{
-    axios.post("/github/test",{name:"chenwl"})
-  },[])
-  return <span>index</span>
+const Index = ({ data, error }) => {
+  if (error) {
+    return <Alert message={data.message} type="error" showIcon closable />
+  }
+
+  // console.log(data);
+
+  return <div></div>
 }
 
-Index.getInitialProps = async (ctx) => {
-  const result = await api.request(
-    { url: '/search/repositories?q=react' },
-    ctx.req,
-    ctx.res
-  )
+function getAllData(ctx) {
+  return Promise.all([
+    api.request({ url: '/user/repos' }, ctx.req, ctx.res),
+    api.request({ url: '/user/starred' }, ctx.req, ctx.res),
+  ])
+}
+
+Index.getInitialProps = async ({ ctx, reduxStore }) => {
+  console.log('reduxStore===')
+
+  const { user } = reduxStore.getState()
+
+  if (!user || !user.id) return { data: [], isLogin: false }
+
+  const data = await getAllData(ctx)
 
   return {
-    data: result.data
+    data: data.map((item) => item.data),
   }
 }
 

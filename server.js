@@ -3,7 +3,7 @@ const Router = require('koa-router')
 const next = require('next')
 const session = require('koa-session')
 const Redis = require('ioredis')
-const koaBody = require("koa-body");
+const koaBody = require('koa-body')
 
 const RedisSessionStore = require('./server/session-store')
 const auth = require('./server/auth')
@@ -18,12 +18,12 @@ const redis = new Redis()
 app.prepare().then(() => {
   const server = new Koa()
   const router = new Router()
-  
+
   server.use(koaBody())
 
   server.keys = ['Chenwl develop Github App']
   const SESSION_CONFIG = {
-    key: 'cc',
+    key: 'cid',
     // maxAge: 30*60*60*1000,
     store: new RedisSessionStore(redis),
   }
@@ -44,7 +44,7 @@ app.prepare().then(() => {
   server.use(router.routes())
 
   server.use(async (ctx, next) => {
-    ctx.req.session = ctx.session;
+    ctx.req.session = ctx.session
     await handle(ctx.req, ctx.res)
     ctx.respond = false
   })
