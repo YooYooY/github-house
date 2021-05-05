@@ -3,13 +3,10 @@ import { useState, useCallback } from 'react'
 import Container from './Container'
 import getConfig from 'next/config'
 import { withRouter } from 'next/router'
+import Link from 'next/link'
 import { connect } from 'react-redux'
 import * as actions from '../store/actions'
 const { Header, Content, Footer } = Layout
-
-import axios from 'axios'
-
-const { publicRuntimeConfig } = getConfig()
 
 const githubIconStyle = {
   color: '#fff',
@@ -24,14 +21,17 @@ const footerStyle = {
 }
 
 const MyLayout = ({ children, user, logout, router }) => {
-  const [search, setSearch] = useState('')
+  const [search, setSearch] = useState(() => {
+    const { query } = router.query || ''
+    return query
+  })
 
   const handleSearchChange = useCallback((e) => {
     setSearch(e.target.value.trim())
   }, [])
 
   const handlOnSearch = useCallback((value) => {
-    console.log(value)
+    router.push(`/search?query=${value}`)
   }, [])
 
   const handleLogout = useCallback(() => {
@@ -54,7 +54,9 @@ const MyLayout = ({ children, user, logout, router }) => {
         <Container renderer={<div className="header-inner" />}>
           <div className="header-left">
             <div className="logo">
-              <Icon type="github" style={githubIconStyle} />
+              <Link href="/">
+                <Icon type="github" style={githubIconStyle} />
+              </Link>
             </div>
             <div>
               <Input.Search
@@ -106,7 +108,7 @@ const MyLayout = ({ children, user, logout, router }) => {
           height: 100%;
         }
         .ant-layout {
-          height: 100%;
+          min-height: 100%;
         }
         .ant-layout-header {
           padding-left: 0;
