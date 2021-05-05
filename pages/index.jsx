@@ -1,11 +1,13 @@
-import { Alert, Button, Icon } from 'antd'
+import { Alert, Button, Icon, Tabs } from 'antd'
+import { useCallback } from 'react'
 import { connect } from 'react-redux'
 import Repo from '../components/Repo'
+import { withRouter } from 'next/router'
 
 const config = require('../config')
 const api = require('../lib/api')
 
-const Index = ({ data, error, user, userRepos, userStaredRepos }) => {
+const Index = ({ data, error, user, userRepos, userStaredRepos, router }) => {
   if (error) {
     return <Alert message={data.message} type="error" showIcon closable />
   }
@@ -28,7 +30,12 @@ const Index = ({ data, error, user, userRepos, userStaredRepos }) => {
       </div>
     )
   }
-  console.log(userRepos)
+  
+  const tabKey = router.query.key || "1";
+  
+  const handleTabChange = useCallback((activeKey)=>{
+    router.push(`/?key=${activeKey}`)
+  },[])
 
   return (
     <div className="root">
@@ -43,9 +50,18 @@ const Index = ({ data, error, user, userRepos, userStaredRepos }) => {
         </p>
       </div>
       <div className="user-repos">
-        {userRepos.map((repo) => (
-          <Repo key={repo.id} repo={repo} />
-        ))}
+        <Tabs defaultActiveKey={tabKey} onChange={handleTabChange} animated={false}>
+          <Tabs.TabPane tab="你的仓库" key="1">
+            {userRepos.map((repo) => (
+              <Repo key={repo.id} repo={repo} />
+            ))}
+          </Tabs.TabPane>
+          <Tabs.TabPane tab="你关注的仓库" key="2">
+            {userStaredRepos.map((repo) => (
+              <Repo key={repo.id} repo={repo} />
+            ))}
+          </Tabs.TabPane>
+        </Tabs>
       </div>
       <style jsx>{`
         .root {
@@ -108,4 +124,4 @@ Index.getInitialProps = async ({ ctx, reduxStore }) => {
   }
 }
 
-export default connect((state) => state)(Index)
+export default connect((state) => state)(withRouter(Index))
