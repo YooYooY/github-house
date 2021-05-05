@@ -5,6 +5,7 @@ const session = require('koa-session')
 const Redis = require('ioredis')
 const RedisSessionStore = require('./server/session-store')
 const auth = require('./server/auth')
+const api = require('./server/api')
 
 const dev = process.env.NODE_ENV !== 'production'
 const app = next({ dev })
@@ -25,17 +26,7 @@ app.prepare().then(() => {
   server.use(session(SESSION_CONFIG, server))
 
   auth(server)
-
-  router.get('/api/user/info', async (ctx) => {
-    const user = ctx.session.userInfo
-    if (!user) {
-      ctx.status = 401
-      ctx.body = 'Need Login';
-      return;
-    }
-    ctx.body = ctx.session.userInfo
-    ctx.set("Content-Type", "application/json");
-  })
+  api(server)
 
   router.get('/query/:name', async (ctx) => {
     const { name } = ctx.params
@@ -49,6 +40,7 @@ app.prepare().then(() => {
   server.use(router.routes())
 
   server.use(async (ctx, next) => {
+    ctx.req.session = ctx.session;
     await handle(ctx.req, ctx.res)
     ctx.respond = false
   })

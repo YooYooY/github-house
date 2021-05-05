@@ -1,15 +1,29 @@
-import { Layout, Icon, Input, Avatar } from 'antd'
+import { Layout, Icon, Input, Avatar, Tooltip, Dropdown, Menu } from 'antd'
 import { useState, useCallback } from 'react'
 import Container from './Container'
+import getConfig from 'next/config'
+import { withRouter } from 'next/router'
+import { connect } from 'react-redux'
+import * as actions from '../store/actions'
 const { Header, Content, Footer } = Layout
 
-const Comp = ({ color, children, style, ...rest }) => (
-  <div style={{ color, ...style }} {...rest}>
-    {children}
-  </div>
-)
+import axios from 'axios'
 
-export default ({ children }) => {
+const { publicRuntimeConfig } = getConfig()
+
+const githubIconStyle = {
+  color: '#fff',
+  fontSize: 40,
+  display: 'block',
+  paddingTop: 10,
+  marginRight: 20,
+}
+
+const footerStyle = {
+  textAlign: 'center',
+}
+
+const MyLayout = ({ children, user, logout, router }) => {
   const [search, setSearch] = useState('')
 
   const handleSearchChange = useCallback((e) => {
@@ -20,18 +34,20 @@ export default ({ children }) => {
     console.log(value)
   }, [])
 
-  const githubIconStyle = {
-    color: '#fff',
-    fontSize: 40,
-    display: 'block',
-    paddingTop: 10,
-    marginRight: 20,
-  }
+  const handleLogout = useCallback(() => {
+    logout()
+  }, [logout])
 
-  const footerStyle = {
-    textAlign: 'center',
-  }
-  
+  const userDropDown = (
+    <Menu>
+      <Menu.Item>
+        <a href="javascript: void(0)" onClick={handleLogout}>
+          登出
+        </a>
+      </Menu.Item>
+    </Menu>
+  )
+
   return (
     <Layout>
       <Header>
@@ -51,15 +67,25 @@ export default ({ children }) => {
           </div>
           <div className="header-right">
             <div className="user">
-              <Avatar size={40} icon="user" />
+              {user && user.id ? (
+                <Dropdown overlay={userDropDown}>
+                  <a href="/">
+                    <Avatar size={40} src={user.avatar_url} />
+                  </a>
+                </Dropdown>
+              ) : (
+                <Tooltip title="点击进行登录">
+                  <a href={`/prepare-auth?url=${router.asPath}`}>
+                    <Avatar size={40} icon="user" />
+                  </a>
+                </Tooltip>
+              )}
             </div>
           </div>
         </Container>
       </Header>
       <Content>
-        <Container>
-          {children}
-        </Container>
+        <Container>{children}</Container>
       </Content>
       <Footer style={footerStyle}>
         Develop by chenwl @
@@ -90,3 +116,5 @@ export default ({ children }) => {
     </Layout>
   )
 }
+
+export default connect((state) => state, actions)(withRouter(MyLayout))
