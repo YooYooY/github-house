@@ -1,7 +1,12 @@
+import axios from 'axios'
+import {useEffect} from 'react'
 const api = require("../lib/api");
 
 const Index = (props) => {
   console.log("index-props",props);
+  useEffect(()=>{
+    axios.post("/github/test",{name:"chenwl"})
+  },[])
   return <span>index</span>
 }
 
