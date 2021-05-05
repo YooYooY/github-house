@@ -44,7 +44,6 @@ module.exports = (server) => {
           ctx.redirect(redirectUrl)
           ctx.session.urlBeforeOAuth = null
         } else {
-          console.log('some error')
           const errorMsg = result.data && result.data.error
           ctx.body = `request token failed ${errorMsg}`
         }
