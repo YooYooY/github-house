@@ -1,8 +1,13 @@
 import { withRouter } from 'next/router'
 import { Row, Col, List } from 'antd'
 const api = require('../lib/api')
-import Link from 'next/link'
 
+/**
+ * sort: 排序方式
+ * order: 排序顺序
+ * lang: 仓库的项目开发主语言
+ * page: 分页页面
+ */
 const LANGUAGES = ['JavaScript', 'HTML', 'CSS', 'TypeScript', 'Java', 'Rust']
 const SORT_TYPES = [
   { name: 'Best Match' },
@@ -12,15 +17,37 @@ const SORT_TYPES = [
   { name: 'Fewest Forks', value: 'forks', order: 'asc' },
 ]
 
-/**
- * sort: 排序方式
- * order: 排序顺序
- * lang: 仓库的项目开发主语言
- * page: 分页页面
- */
+const selectedItemStyle = {
+  borderLeft: '2px solid #e36209',
+  fontWeight: 100,
+}
 
 const Search = ({ repos, router }) => {
-  console.log(repos)
+  const { sort, order, lang, query } = router.query
+
+  const handleLanguageChange = (language) => {
+    router.push({
+      pathname: '/search',
+      query: {
+        query,
+        sort,
+        order,
+        lang: language,
+      },
+    })
+  }
+  const handleSortChange = (sort) => {
+    router.push({
+      pathname: '/search',
+      query: {
+        query,
+        lang,
+        sort: sort.value,
+        order: sort.order,
+      },
+    })
+  }
+
   return (
     <div className="root">
       <Row gutter={20}>
@@ -31,11 +58,10 @@ const Search = ({ repos, router }) => {
             dataSource={LANGUAGES}
             header={<span className="list-header">语言</span>}
             renderItem={(item) => {
+              const selected = lang === item
               return (
-                <List.Item>
-                  <Link href="/search">
-                    <a>{item}</a>
-                  </Link>
+                <List.Item style={selected ? selectedItemStyle : null}>
+                  <a onClick={() => handleLanguageChange(item)}>{item}</a>
                 </List.Item>
               )
             }}
@@ -46,11 +72,16 @@ const Search = ({ repos, router }) => {
             dataSource={SORT_TYPES}
             header={<span className="list-header">排序</span>}
             renderItem={(item) => {
+              let selected = false
+              if (item.name === SORT_TYPES[0].name && !sort) {
+                selected = true
+              } else if (item.value === sort && item.order === order) {
+                selected = true
+              }
+
               return (
-                <List.Item>
-                  <Link href="/search">
-                    <a>{item.name}</a>
-                  </Link>
+                <List.Item style={selected ? selectedItemStyle : null}>
+                  <a onClick={() => handleSortChange(item)}>{item.name}</a>
                 </List.Item>
               )
             }}
@@ -74,7 +105,7 @@ Search.getInitialProps = async ({ ctx }) => {
 
   let queryString = `?q=${query}`
   if (lang) queryString += `+language:${lang}`
-  if (sort) queryString += `&sort=${lang}&order=${order || 'desc'}`
+  if (sort) queryString += `&sort=${sort}&order=${order || 'desc'}`
   if (page) queryString += `&page=${page}`
 
   const result = await api.request(
