@@ -3,14 +3,15 @@ import { useCallback, useEffect } from 'react'
 import { connect } from 'react-redux'
 import Repo from '../components/Repo'
 import { withRouter } from 'next/router'
+import LRU from 'lru-cache'
 
 const config = require('../config')
 const api = require('../lib/api')
 
-const cache = {
-  userRepos: [],
-  userStaredRepos: [],
-} 
+const cache = new LRU({
+  maxAge: 1000 * 60 * 10,
+})
+
 const isServer = typeof window === 'undefined'
 
 const Index = ({ data, error, user, userRepos, userStaredRepos, router }) => {
@@ -41,14 +42,14 @@ const Index = ({ data, error, user, userRepos, userStaredRepos, router }) => {
 
   const handleTabChange = useCallback((activeKey) => {
     router.push(`/?key=${activeKey}`)
-  }, []);
-  
-  useEffect(()=>{
-      if (!isServer) {
-        cache.userRepos = userRepos
-        cache.userStaredRepos = userStaredRepos
-      }
-  },[])
+  }, [])
+
+  useEffect(() => {
+    if (!isServer) {
+      userRepos && cache.set('userRepos', userRepos)
+      userStaredRepos && cache.set('userStaredRepos', userStaredRepos)
+    }
+  }, [isServer, userRepos, userStaredRepos])
 
   return (
     <div className="root">
@@ -127,32 +128,32 @@ function getAllData(ctx) {
 
 Index.getInitialProps = async ({ ctx, reduxStore }) => {
   const { user } = reduxStore.getState()
-  let isLogin = false;
+  let isLogin = false
 
   if (!user || !user.id) return { data: [], isLogin }
 
-  isLogin = true;
-  
-  if (!isServer){
-       if (cache.userRepos.length || cache.userStaredRepos.length) {
-         return {
-           isLogin,
-           userRepos: cache.userRepos,
-           userStaredRepos: cache.userStaredRepos,
-         }
-       } 
-  };
-  
+  isLogin = true
+
+  if (!isServer) {
+    const userRepos = cache.get('userRepos')
+    const userStaredRepos = cache.get('userStaredRepos')
+    if (userRepos && userStaredRepos) {
+      return {
+        isLogin,
+        userRepos,
+        userStaredRepos,
+      }
+    }
+  }
+
   const data = await getAllData(ctx)
   const [userRepos, userStaredRepos] = data.map((item) => item.data)
-  
+
   return {
     isLogin,
     userRepos,
     userStaredRepos,
   }
-  
-  
 }
 
 export default withRouter(connect((state) => state)(Index))
