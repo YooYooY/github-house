@@ -31,7 +31,7 @@ module.exports = (server) => {
           const { access_token, token_type } = result.data
           const userInfoResp = await axios({
             method: 'GET',
-            url: 'https://api.github.com/user',
+            url: config.GITHUB_BASE_URL+'/user',
             headers: {
               Authorization: `${token_type} ${access_token}`,
             },

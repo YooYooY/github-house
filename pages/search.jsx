@@ -1,5 +1,9 @@
-import { withRouter } from 'next/router'
-import { Row, Col, List } from 'antd'
+import { isValidElement, memo } from 'react'
+import Router, { withRouter } from 'next/router'
+import Link from 'next/link'
+import { Row, Col, List, Pagination } from 'antd'
+import Repo from '../components/Repo'
+
 const api = require('../lib/api')
 
 /**
@@ -22,36 +26,33 @@ const selectedItemStyle = {
   fontWeight: 100,
 }
 
-const Search = ({ repos, router }) => {
-  const { sort, order, lang, query } = router.query
+const noop = () => {}
 
-  const handleLanguageChange = (language) => {
-    router.push({
-      pathname: '/search',
-      query: {
-        query,
-        sort,
-        order,
-        lang: language,
-      },
-    })
-  }
-  const handleSortChange = (sort) => {
-    router.push({
-      pathname: '/search',
-      query: {
-        query,
-        lang,
-        sort: sort.value,
-        order: sort.order,
-      },
-    })
-  }
+const pre_page = 8
+
+const FilterLink = memo(({ name, query, lang, sort, order, page }) => {
+  let queryString = `?query=${query}`
+  if (lang) queryString += `&lang=${lang}`
+  if (sort) queryString += `&sort=${sort}&order=${order || 'desc'}`
+  if (page) queryString += `&page=${page}`
+
+  queryString += `&pre_page=${pre_page}`
+
+  return (
+    <Link href={`/search${queryString}`}>
+      {isValidElement(name) ? name : <a>{name}</a>}
+    </Link>
+  )
+})
+
+const Search = ({ repos, router }) => {
+  const querys = router.query
+  const { lang, sort, order, page } = router.query
 
   return (
     <div className="root">
       <Row gutter={20}>
-        <Col span={6}>
+        <Col span={6} className="select-menu">
           <List
             bordered
             style={{ marginBottom: 20 }}
@@ -61,7 +62,11 @@ const Search = ({ repos, router }) => {
               const selected = lang === item
               return (
                 <List.Item style={selected ? selectedItemStyle : null}>
-                  <a onClick={() => handleLanguageChange(item)}>{item}</a>
+                  {selected ? (
+                    <span>{item}</span>
+                  ) : (
+                    <FilterLink {...querys} lang={item} name={item} />
+                  )}
                 </List.Item>
               )
             }}
@@ -81,13 +86,73 @@ const Search = ({ repos, router }) => {
 
               return (
                 <List.Item style={selected ? selectedItemStyle : null}>
-                  <a onClick={() => handleSortChange(item)}>{item.name}</a>
+                  {selected ? (
+                    <span>{item.name}</span>
+                  ) : (
+                    <FilterLink
+                      {...querys}
+                      sort={item.value}
+                      order={item.order}
+                      name={item.name}
+                    />
+                  )}
                 </List.Item>
               )
             }}
           />
         </Col>
+        <Col span={18}>
+          <h3 className="repos-title">{repos.total_count} 个仓库</h3>
+          {repos.items.map((repo) => (
+            <Repo repo={repo} key={repo.id}></Repo>
+          ))}
+          <div className="pagination">
+            <Pagination
+              pageSize={pre_page}
+              current={Number(page) || 1}
+              total={repos.total_count}
+              onChange={noop}
+              itemRender={(page, type, ol) => {
+                const p =
+                  type === 'page' ? page : type === 'prev' ? page - 1 : page + 1
+                const name = type === 'page' ? page : ol
+                return <FilterLink {...querys} page={p} name={name} />
+              }}
+            />
+          </div>
+        </Col>
       </Row>
+      <style jsx>{`
+        .root {
+          padding: 20px 0;
+        }
+        .list-header {
+          font-weight: 800;
+          font-size: 16px;
+        }
+        .repos-title {
+          border-bottom: 1px solid #eee;
+          font-size: 24px;
+          line-height: 50px;
+        }
+        .pagination {
+          padding: 20px;
+          text-align: center;
+        }
+        .pagination a {
+          margin: 0;
+          display: block;
+        }
+      `}</style>
+      <style jsx global>{`
+        .select-menu {
+          top: 20px;
+          position: sticky;
+        }
+        .select-menu > .ant-list {
+          background-color: #fff;
+        }
+      `}</style>
     </div>
   )
 }
@@ -107,6 +172,8 @@ Search.getInitialProps = async ({ ctx }) => {
   if (lang) queryString += `+language:${lang}`
   if (sort) queryString += `&sort=${sort}&order=${order || 'desc'}`
   if (page) queryString += `&page=${page}`
+
+  queryString += `&pre_page=${pre_page}`
 
   const result = await api.request(
     {
