@@ -2,7 +2,7 @@ import App, { Container } from 'next/app'
 import Layout from '../components/Layout'
 import PageLoading from '../components/PageLoading'
 import '../styles/index.css'
-// import "antd/dist/antd.css";
+import "antd/dist/antd.css";
 import { Provider } from 'react-redux'
 import withRedux from '../lib/with-redux'
 import Router from 'next/router'
@@ -10,7 +10,7 @@ import Link from 'next/link'
 
 class MyApp extends App {
   state = {
-    loading: false,
+    loading: false, 
   }
   startLoading = () => {
     this.setState({
@@ -53,12 +53,6 @@ class MyApp extends App {
         <Provider store={reduxStore}>
           {this.state.loading && <PageLoading />}
           <Layout>
-            <Link href="/">
-              <a>Index</a>
-            </Link>
-            <Link href="/detail">
-              <a>Detail</a>
-            </Link>
             <Component {...pageProps} />
           </Layout>
         </Provider>

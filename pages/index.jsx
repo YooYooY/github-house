@@ -1,11 +1,17 @@
 import { Alert, Button, Icon, Tabs } from 'antd'
-import { useCallback } from 'react'
+import { useCallback, useEffect } from 'react'
 import { connect } from 'react-redux'
 import Repo from '../components/Repo'
 import { withRouter } from 'next/router'
 
 const config = require('../config')
 const api = require('../lib/api')
+
+const cache = {
+  userRepos: [],
+  userStaredRepos: [],
+} 
+const isServer = typeof window === 'undefined'
 
 const Index = ({ data, error, user, userRepos, userStaredRepos, router }) => {
   if (error) {
@@ -30,11 +36,18 @@ const Index = ({ data, error, user, userRepos, userStaredRepos, router }) => {
       </div>
     )
   }
-  
-  const tabKey = router.query.key || "1";
-  
-  const handleTabChange = useCallback((activeKey)=>{
+
+  const tabKey = router.query.key || '1'
+
+  const handleTabChange = useCallback((activeKey) => {
     router.push(`/?key=${activeKey}`)
+  }, []);
+  
+  useEffect(()=>{
+      if (!isServer) {
+        cache.userRepos = userRepos
+        cache.userStaredRepos = userStaredRepos
+      }
   },[])
 
   return (
@@ -50,7 +63,11 @@ const Index = ({ data, error, user, userRepos, userStaredRepos, router }) => {
         </p>
       </div>
       <div className="user-repos">
-        <Tabs defaultActiveKey={tabKey} onChange={handleTabChange} animated={false}>
+        <Tabs
+          defaultActiveKey={tabKey}
+          onChange={handleTabChange}
+          animated={false}
+        >
           <Tabs.TabPane tab="你的仓库" key="1">
             {userRepos.map((repo) => (
               <Repo key={repo.id} repo={repo} />
@@ -110,18 +127,32 @@ function getAllData(ctx) {
 
 Index.getInitialProps = async ({ ctx, reduxStore }) => {
   const { user } = reduxStore.getState()
+  let isLogin = false;
 
-  if (!user || !user.id) return { data: [], isLogin: false }
+  if (!user || !user.id) return { data: [], isLogin }
 
+  isLogin = true;
+  
+  if (!isServer){
+       if (cache.userRepos.length || cache.userStaredRepos.length) {
+         return {
+           isLogin,
+           userRepos: cache.userRepos,
+           userStaredRepos: cache.userStaredRepos,
+         }
+       } 
+  };
+  
   const data = await getAllData(ctx)
-
   const [userRepos, userStaredRepos] = data.map((item) => item.data)
-
+  
   return {
-    isLogin: true,
+    isLogin,
     userRepos,
     userStaredRepos,
   }
+  
+  
 }
 
-export default connect((state) => state)(withRouter(Index))
+export default withRouter(connect((state) => state)(Index))
