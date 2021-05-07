@@ -11,8 +11,11 @@ function b64_to_utf8(str) {
   return decodeURIComponent(escape(atob(str)))
 }
 
-export default memo(function MarkdownRenderer({ content, isBase64 }) {
-  const str = isBase64 ? b64_to_utf8(content) : atob(content)
+export default memo(function MarkdownRenderer({ content, isBase64, isStr }) {
+  let str = content
+  if (!isStr) {
+    str = isBase64 ? b64_to_utf8(content) : atob(content)
+  }
 
   const html = useMemo(() => md.render(str), [str])
 

@@ -1,10 +1,14 @@
 import dynamic from 'next/dynamic'
 import WithRepoBasic from '../../components/with-repo-basic'
 import api from '../../lib/api'
+import { Spin } from 'antd'
 
-const MarkdownRender = dynamic(() => import('../../components/MarkdownRender'),{
-  loading:()=><p>loading...</p>
-})
+const MarkdownRender = dynamic(
+  () => import('../../components/MarkdownRender'),
+  {
+    loading: () => <Spin />,
+  }
+)
 
 const Detail = ({ readme }) => {
   return <MarkdownRender content={readme.content} isBase64 />
