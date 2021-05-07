@@ -2,8 +2,8 @@ import WithRepoBasic from '../../components/with-repo-basic'
 import api from '../../lib/api'
 import { memo } from 'react'
 import { Avatar, Button, Spin, Select } from 'antd'
-import { useState, useCallback } from 'react'
-import { getLastUpdated } from '../../lib/utils'
+import { useState, useCallback, useEffect } from 'react'
+import { getLastUpdated, isServer } from '../../lib/utils'
 import dynamic from 'next/dynamic'
 import SearchUser from '../../components/SearchUser'
 
@@ -29,6 +29,8 @@ const makeQuery = (creator, state, label) => {
   return `?${arr.join('&')}`
 }
 
+const CACHE = {}
+
 const { Option } = Select
 
 const IssueDetail = memo(({ issue }) => {
@@ -52,6 +54,27 @@ const IssueDetail = memo(({ issue }) => {
     </div>
   )
 })
+
+function Label({ label }) {
+  return (
+    <>
+      <span className="label" style={{ backgroundColor: `#${label.color}` }}>
+        {label.name}
+      </span>
+      <style jsx>{`
+        .label {
+          display: inline-block;
+          line-height: 20px;
+          padding: 0 5px;
+          border-radius: 2px;
+        }
+        .label + .label {
+          margin-left: 10px;
+        }
+      `}</style>
+    </>
+  )
+}
 
 const IssueItem = memo(({ issue }) => {
   const [showDetail, setShowDetail] = useState(false)
@@ -77,6 +100,9 @@ const IssueItem = memo(({ issue }) => {
         <div className="main-info">
           <h6>
             <span>{issue.title}</span>
+            {issue.labels.map((label) => (
+              <Label key={label.id} label={label} />
+            ))}
           </h6>
           <p className="sub-info">
             <span>更新于 {getLastUpdated(issue.updated_at)}</span>
@@ -134,6 +160,7 @@ const Issues = ({ initialIssues, labels, fullName }) => {
     setLabel(value)
   }, [])
   const handleSearch = useCallback(() => {
+    if (!creator && !state && !label.length) return
     setFetching(true)
     const url = `/repos/${fullName}/issues${makeQuery(creator, state, label)}`
     api
@@ -148,6 +175,12 @@ const Issues = ({ initialIssues, labels, fullName }) => {
         setFetching(false)
       })
   }, [creator, state, label, fullName])
+
+  useEffect(() => {
+    if (!isServer && labels.length) {
+      CACHE[`${fullName}`] = labels
+    }
+  }, [fullName, labels])
 
   return (
     <div className="root">
@@ -223,9 +256,13 @@ Issues.getInitialProps = async ({ ctx }) => {
   const { owner, name } = ctx.query
   const fullName = `${owner}/${name}`
 
+  const cacheLabels = CACHE[fullName];
+  
   const [issuesResp, labelsResp] = await Promise.all([
     getReposData('issues', fullName, ctx),
-    getReposData('labels', fullName, ctx),
+    cacheLabels
+      ? Promise.resolve({data:cacheLabels})
+      : getReposData('labels', fullName, ctx),
   ])
 
   return {
