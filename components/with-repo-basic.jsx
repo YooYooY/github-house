@@ -48,7 +48,7 @@ export default function(Comp, type = 'index') {
             )}
           </div>
         </div>
-        <div>
+        <div className="repo-content">
           <Comp {...restProps} />
         </div>
         <style jsx>{`
@@ -56,10 +56,14 @@ export default function(Comp, type = 'index') {
             padding-top: 20px;
           }
           .repo-basic {
-            padding: 20px;
             border: 1px solid #eee;
             margin-bottom: 20px;
             border-radius: 5px;
+            box-shadow: 2px 2px 10px #ddd;
+          }
+          .repo-content {
+            background-color: #fff;
+            padding: 20px;
           }
           .tabs {
             padding: 0 20px 20px;

@@ -1,10 +1,9 @@
 import WithRepoBasic from '../../components/with-repo-basic'
 import api from '../../lib/api'
+import MarkdownRender from '../../components/MarkdownRender'
 
-const Detail = ({readme}) => {
-    const content = atob(readme.content);
-    console.log(content)
-  return <span>Detail Index</span>
+const Detail = ({ readme }) => {
+  return <MarkdownRender content={readme.content} isBase64 />
 }
 
 Detail.getInitialProps = async ({ ctx }) => {
