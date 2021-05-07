@@ -249,7 +249,7 @@ const Issues = ({ initialIssues, labels, fullName }) => {
 
 const getReposData = (type, fullName, ctx) => {
   const url = `/repos/${fullName}/${type}`
-  return api.request({ url }, ctx.req, ctx.res)
+  return api.request({ url }, ctx)
 }
 
 Issues.getInitialProps = async ({ ctx }) => {

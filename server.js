@@ -50,7 +50,7 @@ app.prepare().then(() => {
     await handle(ctx.req, ctx.res)
     ctx.respond = false
   })
-
+  
   server.listen(3000, () => {
     console.log('koa server listening on 3000')
   })

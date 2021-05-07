@@ -123,8 +123,8 @@ const Index = ({ data, error, user, userRepos=[], userStaredRepos=[], router }) 
 
 function getAllData(ctx) {
   return Promise.all([
-    api.request({ url: '/user/repos' }, ctx.req, ctx.res),
-    api.request({ url: '/user/starred' }, ctx.req, ctx.res),
+    api.request({ url: '/user/repos' }, ctx),
+    api.request({ url: '/user/starred' }, ctx),
   ])
 }
 
@@ -149,8 +149,8 @@ Index.getInitialProps = async ({ ctx, reduxStore }) => {
   }
 
   const data = await getAllData(ctx)
-  const [userRepos, userStaredRepos] = data.map((item) => item.data)
-
+  const [userRepos=[], userStaredRepos=[]] = data.map((item) => item.data);
+  
   return {
     isLogin,
     userRepos,

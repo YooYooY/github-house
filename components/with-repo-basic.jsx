@@ -96,7 +96,7 @@ export default function(Comp, type = 'index') {
     }
 
     const url = `/repos/${full_name}`
-    const repoBasicReps = await api.request({ url }, ctx.req, ctx.res)
+    const repoBasicReps = await api.request({ url }, ctx)
     repoBasic = repoBasicReps.data
 
     return {

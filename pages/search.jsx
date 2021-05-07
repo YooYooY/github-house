@@ -185,8 +185,7 @@ Search.getInitialProps = async ({ ctx }) => {
     {
       url: `/search/repositories${queryString}`,
     },
-    ctx.req,
-    ctx.res
+    ctx
   )
 
   return {

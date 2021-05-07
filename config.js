@@ -1,8 +1,8 @@
-// const GITHUB_URL = 'https://github.com'
-// const GITHUB_BASE_URL = 'https://api.github.com'
+const GITHUB_URL = 'https://github.com'
+const GITHUB_BASE_URL = 'https://api.github.com'
 
-const GITHUB_URL = 'http://localhost:3001'
-const GITHUB_BASE_URL = 'http://localhost:3001'
+// const GITHUB_URL = 'http://localhost:3001'
+// const GITHUB_BASE_URL = 'http://localhost:3001'
 
 const GITHUB_OAUTH_URL = `${GITHUB_URL}/login/oauth/authorize`
 const SCOPE = 'user'

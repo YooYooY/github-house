@@ -1,4 +1,3 @@
-const axios = require('axios')
 const { requestGithub } = require('../lib/api')
 
 module.exports = (server) => {

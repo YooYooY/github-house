@@ -23,7 +23,43 @@ router.get("/user/starred", auth, (ctx, next) => {
     ctx.body = require("../json/starred.json");
 });
 
-const repositories = require("../json/repositories.json");
+router.get("/repos/:owner/:name", (ctx, next) => {
+    let { owner = "default", name = "default" } = ctx.params;
+    // 中文
+    let repos = require("../json/repo.json");
+    // let repos = require("../json/repo.json");
+    repos.name = name;
+    repos.full_name = `${owner}/${name}`;
+    repos.owner.login = owner;
+
+    ctx.body = repos;
+});
+
+router.get("/repos/:owner/:name/readme", (ctx, next) => {
+    ctx.body = require("../json/readme_zh.json");
+});
+router.get("/repos/:owner/:name/issues", (ctx, next) => {
+    let data = require("../json/issues.json");
+    let { creator, state, label } = ctx.query;
+
+    if (creator) {
+        data = _.shuffle(data);
+    }
+    if (state) {
+        data = _.shuffle(data).slice(0, 10);
+        data.forEach((item) => (item.state = state));
+    }
+    if (label) {
+        data = _.shuffle(data).slice(0, 5);
+    }
+
+    ctx.body = data;
+});
+router.get("/repos/:owner/:name/labels", (ctx, next) => {
+    ctx.body = require("../json/labels.json");
+});
+
+const repositories = require("../json/repos_search.json");
 router.get("/search/repositories", (ctx, next) => {
     // const query = {
     //     q: "react language",
@@ -62,13 +98,20 @@ router.get("/search/repositories", (ctx, next) => {
     };
 });
 
+router.get("/search/users", (ctx, next) => {
+    const { q = "" } = ctx.query;
+    let data = require("../json/search.json");
+    data.items.forEach((item) => {
+        item.login = item.login + "_" + q;
+    });
+    ctx.body = data;
+});
+
 router.get("/login/oauth/authorize", (ctx, next) => {
     ctx.redirect(server_url + "/auth?code=mockcode");
 });
 
 router.post("/login/oauth/access_token", (ctx, next) => {
-    console.log("body", ctx.request.body);
-
     ctx.body = {
         access_token: "mock_access_token",
         token_type: "bearer",

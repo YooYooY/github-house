@@ -22,7 +22,7 @@ Detail.getInitialProps = async ({ ctx }) => {
   } = ctx
 
   const url = `/repos/${owner}/${name}/readme`
-  const readmeReps = await api.request({ url }, req, res)
+  const readmeReps = await api.request({ url }, ctx)
 
   return {
     readme: readmeReps.data,
