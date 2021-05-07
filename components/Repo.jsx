@@ -27,7 +27,9 @@ const Repo = ({ repo }) => {
           <span className="last-updated">
             {getLastUpdated(repo.updated_at)}
           </span>
-          <span className="open-issues">{repo.open_issues_count} open issues</span>
+          <span className="open-issues">
+            {repo.open_issues_count} open issues
+          </span>
         </p>
       </div>
       <div className="lang-star">
