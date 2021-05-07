@@ -15,6 +15,7 @@
 # production
 /build
 /bundles
+config.dev.js
 
 # misc
 .DS_Store
