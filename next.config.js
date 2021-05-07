@@ -1,5 +1,7 @@
+const webpack = require("webpack");
 const withCss = require('@zeit/next-css')
-const config = require("./config");
+const withBoundleAnalyzer = require('@zeit/next-bundle-analyzer')
+const config = require('./config')
 
 const configs = {
   // 编译文件输出目录
@@ -50,9 +52,26 @@ if (typeof require !== 'undefined') {
   require.extensions['.css'] = (file) => {}
 }
 
-module.exports = withCss({
-  publicRuntimeConfig: {
-    GITHUB_OAUTH_URL: config.GITHUB_OAUTH_URL,
-    OAUTH_URL: config.OAUTH_URL,
-  },
-})
+module.exports = withBoundleAnalyzer(
+  withCss({
+    webpack(config){
+      config.plugins.push(new webpack.IgnorePlugin(/^\.\/locale$/,/moment$/));
+      return config;
+    },
+    publicRuntimeConfig: {
+      GITHUB_OAUTH_URL: config.GITHUB_OAUTH_URL,
+      OAUTH_URL: config.OAUTH_URL,
+    },
+    analyzeBrowser: ['browser', 'both'].includes(process.env.BUNDLE_ANALYZE),
+    bundleAnalyzerConfig: {
+      server: {
+        analyzerMode: 'static',
+        reportFilename: '../bundles/server.html',
+      },
+      browser: {
+        analyzerMode: 'static',
+        reportFilename: '../bundles/client.html',
+      },
+    },
+  })
+)

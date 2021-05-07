@@ -1,6 +1,8 @@
 import Link from 'next/link'
 import { Icon } from 'antd'
 import moment from 'moment'
+import 'moment/locale/zh-cn'
+moment.locale('zh-cn')
 
 function getLicense(license) {
   return license ? `${license.spdx_id} license` : ''
