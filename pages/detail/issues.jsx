@@ -1,16 +1,35 @@
 import WithRepoBasic from '../../components/with-repo-basic'
 import api from '../../lib/api'
 import { memo } from 'react'
-import { Avatar, Button, Spin } from 'antd'
+import { Avatar, Button, Spin, Select } from 'antd'
 import { useState, useCallback } from 'react'
 import { getLastUpdated } from '../../lib/utils'
 import dynamic from 'next/dynamic'
+import SearchUser from '../../components/SearchUser'
+
 const MarkdownRender = dynamic(
   () => import('../../components/MarkdownRender'),
   {
     loading: () => <Spin />,
   }
 )
+
+const makeQuery = (creator, state, label) => {
+  let creatorStr = creator ? `creator=${creator}` : ''
+  let stateStr = state ? `state=${state}` : ''
+  let labelStr = ''
+  if (label && label.length) {
+    labelStr = `label=${label.join(',')}`
+  }
+  const arr = []
+  if (creatorStr) arr.push(creatorStr)
+  if (stateStr) arr.push(stateStr)
+  if (labelStr) arr.push(labelStr)
+
+  return `?${arr.join('&')}`
+}
+
+const { Option } = Select
 
 const IssueDetail = memo(({ issue }) => {
   return (
@@ -98,14 +117,72 @@ const IssueItem = memo(({ issue }) => {
   )
 })
 
-const Issues = ({ issues }) => {
-  console.log(issues)
+const Issues = ({ initialIssues, labels, fullName }) => {
+  const [creator, setCreator] = useState()
+  const [state, setState] = useState()
+  const [label, setLabel] = useState([])
+  const [issues, setIssues] = useState(initialIssues)
+  const [fetching, setFetching] = useState(false)
+
+  const handleCreatorChange = useCallback((value) => {
+    setCreator(value)
+  }, [])
+  const handleStateChange = useCallback((value) => {
+    setState(value)
+  }, [])
+  const handleLabelChange = useCallback((value) => {
+    setLabel(value)
+  }, [])
+  const handleSearch = useCallback(() => {
+    setFetching(true)
+    const url = `/repos/${fullName}/issues${makeQuery(creator, state, label)}`
+    api
+      .request({ url })
+      .then((reps) => {
+        setIssues(reps.data)
+      })
+      .catch((error) => {
+        console.log(error)
+      })
+      .finally(() => {
+        setFetching(false)
+      })
+  }, [creator, state, label, fullName])
+
   return (
     <div className="root">
+      <div className="repo-search">
+        <SearchUser onChange={handleCreatorChange} value={creator} />
+        <Select placeholder="状态" value={state} onChange={handleStateChange}>
+          <Option value="all">all</Option>
+          <Option value="open">open</Option>
+          <Option value="closed">closed</Option>
+        </Select>
+        <Select
+          mode="multiple"
+          placeholder="label"
+          value={label}
+          className="repo-search-label"
+          onChange={handleLabelChange}
+        >
+          {labels.map((la) => (
+            <Option key={la.id} value={la.name}>
+              {la.name}
+            </Option>
+          ))}
+        </Select>
+        <Button type="primary" onClick={handleSearch} disabled={fetching}>
+          搜索
+        </Button>
+      </div>
       <div className="issues">
-        {issues.map((issue) => (
-          <IssueItem key={issue.id} issue={issue} />
-        ))}
+        {fetching ? (
+          <div className="loading">
+            <Spin />
+          </div>
+        ) : (
+          issues.map((issue) => <IssueItem key={issue.id} issue={issue} />)
+        )}
       </div>
       <style jsx>{`
         .issues {
@@ -114,24 +191,47 @@ const Issues = ({ issues }) => {
           margin-bottom: 20px;
           margin-top: 20px;
         }
+        .repo-search {
+          display: flex;
+        }
+        .loading {
+          height: 400px;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+        }
+      `}</style>
+      <style global jsx>{`
+        .repo-search > .ant-select {
+          margin-right: 20px;
+          width: 200px;
+        }
+        .repo-search-label {
+          flex: 1;
+        }
       `}</style>
     </div>
   )
 }
 
+const getReposData = (type, fullName, ctx) => {
+  const url = `/repos/${fullName}/${type}`
+  return api.request({ url }, ctx.req, ctx.res)
+}
+
 Issues.getInitialProps = async ({ ctx }) => {
   const { owner, name } = ctx.query
+  const fullName = `${owner}/${name}`
 
-  const issuesResp = await api.request(
-    {
-      url: `/repos/${owner}/${name}/issues`,
-    },
-    ctx.req,
-    ctx.res
-  )
+  const [issuesResp, labelsResp] = await Promise.all([
+    getReposData('issues', fullName, ctx),
+    getReposData('labels', fullName, ctx),
+  ])
 
   return {
-    issues: issuesResp.data,
+    initialIssues: issuesResp.data,
+    labels: labelsResp.data,
+    fullName,
   }
 }
 
