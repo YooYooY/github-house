@@ -4,6 +4,8 @@ const next = require('next')
 const session = require('koa-session')
 const Redis = require('ioredis')
 const koaBody = require('koa-body')
+const atob = require('atob')
+global.atob = atob;
 
 const RedisSessionStore = require('./server/session-store')
 const auth = require('./server/auth')

@@ -87,7 +87,7 @@ export default function(Comp, type = 'index') {
     if (repoBasic) {
       return {
         repoBasic,
-        compProps,
+        ...compProps,
       }
     }
 
@@ -97,7 +97,7 @@ export default function(Comp, type = 'index') {
 
     return {
       repoBasic,
-      compProps,
+      ...compProps,
     }
   }
 
