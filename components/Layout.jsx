@@ -1,7 +1,6 @@
 import { Layout, Icon, Input, Avatar, Tooltip, Dropdown, Menu } from 'antd'
 import { useState, useCallback } from 'react'
 import Container from './Container'
-import getConfig from 'next/config'
 import { withRouter } from 'next/router'
 import Link from 'next/link'
 import { connect } from 'react-redux'

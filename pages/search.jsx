@@ -1,8 +1,10 @@
-import { isValidElement, memo } from 'react'
-import Router, { withRouter } from 'next/router'
+import { isValidElement, memo, useEffect } from 'react'
+import { withRouter } from 'next/router'
 import Link from 'next/link'
 import { Row, Col, List, Pagination } from 'antd'
 import Repo from '../components/Repo'
+import { cacheArray } from '../lib/repo-basic-cache'
+import { isServer } from '../lib/utils'
 
 const api = require('../lib/api')
 
@@ -47,7 +49,11 @@ const FilterLink = memo(({ name, query, lang, sort, order, page }) => {
 
 const Search = ({ repos, router }) => {
   const querys = router.query
-  const { lang, sort, order, page } = router.query
+  const { lang, sort, order, page } = router.query;
+  
+  useEffect(()=>{
+    !isServer && cacheArray(repos.items);
+  },[])
 
   return (
     <div className="root">

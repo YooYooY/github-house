@@ -6,7 +6,6 @@ import "antd/dist/antd.css";
 import { Provider } from 'react-redux'
 import withRedux from '../lib/with-redux'
 import Router from 'next/router'
-import Link from 'next/link'
 
 class MyApp extends App {
   state = {

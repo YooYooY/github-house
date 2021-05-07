@@ -4,6 +4,8 @@ import { connect } from 'react-redux'
 import Repo from '../components/Repo'
 import { withRouter } from 'next/router'
 import LRU from 'lru-cache'
+import { isServer } from '../lib/utils'
+import { cacheArray } from '../lib/repo-basic-cache'
 
 const config = require('../config')
 const api = require('../lib/api')
@@ -12,9 +14,7 @@ const cache = new LRU({
   maxAge: 1000 * 60 * 10,
 })
 
-const isServer = typeof window === 'undefined'
-
-const Index = ({ data, error, user, userRepos, userStaredRepos, router }) => {
+const Index = ({ data, error, user, userRepos=[], userStaredRepos=[], router }) => {
   if (error) {
     return <Alert message={data.message} type="error" showIcon closable />
   }
@@ -46,8 +46,10 @@ const Index = ({ data, error, user, userRepos, userStaredRepos, router }) => {
 
   useEffect(() => {
     if (!isServer) {
-      userRepos && cache.set('userRepos', userRepos)
-      userStaredRepos && cache.set('userStaredRepos', userStaredRepos)
+      cacheArray(userRepos)
+      cacheArray(userStaredRepos)
+      cache.set('userRepos', userRepos)
+      cache.set('userStaredRepos', userStaredRepos)
     }
   }, [isServer, userRepos, userStaredRepos])
 

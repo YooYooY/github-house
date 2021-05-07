@@ -1,7 +1,10 @@
 import Repo from './Repo'
 import Link from 'next/link'
+import { useEffect } from 'react'
 import { withRouter } from 'next/router'
 import api from '../lib/api'
+import { cache, get } from '../lib/repo-basic-cache'
+import { isServer } from '../lib/utils'
 
 const makeQuery = (queryObject) => {
   return (
@@ -19,6 +22,10 @@ export default function(Comp, type = 'index') {
   function RepoBasic(props) {
     const { repoBasic, router, ...restProps } = props
     const query = makeQuery(router.query)
+
+    useEffect(() => {
+      if (!isServer) cache(repoBasic)
+    }, [])
 
     return (
       <div className="root">
@@ -69,15 +76,29 @@ export default function(Comp, type = 'index') {
   RepoBasic.getInitialProps = async (props) => {
     const { ctx } = props
     const { owner, name } = ctx.query
-    const url = `/repos/${owner}/${name}`
-    const repoBasic = await api.request({ url }, ctx.req, ctx.res)
 
     let compProps = {}
     if (Comp.getInitialProps) {
       compProps = await Comp.getInitialProps(props)
     }
 
-    return { repoBasic: repoBasic.data, compProps }
+    const full_name = `${owner}/${name}`
+    let repoBasic = get(full_name)
+    if (repoBasic) {
+      return {
+        repoBasic,
+        compProps,
+      }
+    }
+
+    const url = `/repos/${full_name}`
+    const repoBasicReps = await api.request({ url }, ctx.req, ctx.res)
+    repoBasic = repoBasicReps.data
+
+    return {
+      repoBasic,
+      compProps,
+    }
   }
 
   return withRouter(RepoBasic)
